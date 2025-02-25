@@ -1,0 +1,18 @@
+{
+  "keyboard": "2btn",
+  "manufacturer": "Custom",
+  "maintainer": "knowSkill",
+  "url": "",
+  "firmware": "qmk",
+  "processor": "RP2040",
+  "bootloader": "rp2040",
+  "matrix_size": { "rows": 1, "cols": 2 },
+  "layouts": {
+    "LAYOUT": {
+      "layout": [
+        { "label": "Key1", "x": 0, "y": 0, "matrix": [0, 0] },
+        { "label": "Key2", "x": 1, "y": 0, "matrix": [0, 1] }
+      ]
+    }
+  }
+}
