@@ -1,0 +1,48 @@
+name: Build QMK Firmware  
+
+on:  
+  push:  
+  pull_request:  
+
+jobs:  
+  build:  
+    runs-on: ubuntu-latest
+    container: ghcr.io/qmk/qmk_cli
+
+    steps:
+      - name: Install prerequisites
+        run: |
+          apt-get update
+          apt-get install -y jq
+
+      - name: Disable safe.directory check
+        run: |
+          git config --global --add safe.directory '*'
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy submodules
+        run: |
+          qmk git-submodule -f
+
+      - name: Build firmware
+        run: |
+          pwd
+          ls -lt
+          qmk setup
+          qmk compile -kb 2btn -km default
+          pwd
+          ls -lt
+
+      - name: Upload binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware
+          if-no-files-found: ignore
+          path: |
+            *.bin
+            *.hex
+            *.uf2
+            .build/failed.*
+            .failed
