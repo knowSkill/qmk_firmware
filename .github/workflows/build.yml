@@ -31,7 +31,7 @@ jobs:
           pwd
           ls -lt
           qmk setup
-          qmk compile -kb 2btn -km default
+          qmk compile -kb 4btn -km default
           pwd
           ls -lt
 
