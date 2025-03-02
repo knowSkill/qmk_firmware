@@ -4,8 +4,12 @@
   "maintainer": "knowSkill",
   "url": "",
   "firmware": "qmk",
-  "processor": "RP2040",
   "bootloader": "rp2040",
+  "processor": "RP2040",
+  "matrix_pins": {
+      "cols": ["GP6", "GP7", "GP8", "GP9"],
+      "rows": ["GP29"]
+  },
   "matrix_size": { "rows": 1, "cols": 4 },
   "layouts": {
     "LAYOUT": {

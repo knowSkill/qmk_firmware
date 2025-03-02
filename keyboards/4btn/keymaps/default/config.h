@@ -28,7 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MATRIX_ROWS 1
 #define MATRIX_COLS 4
 
-#define DIODE_DIRECTION ROW2COL
+#define DIODE_DIRECTION COL2ROW
 
 #define VENDOR_ID  0x0000 // Replace with your vendor ID  
 #define PRODUCT_ID 000000 // Replace with your product ID  
