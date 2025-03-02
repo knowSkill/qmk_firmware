@@ -26,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //#define TAPPING_TERM 100
 
 #define MATRIX_ROWS 1
-#define MATRIX_COLS 2
+#define MATRIX_COLS 4
 
 #define DIODE_DIRECTION ROW2COL
 
