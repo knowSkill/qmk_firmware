@@ -27,102 +27,125 @@ enum {
     MACRO_3
 };
 
-// Macro Sequence Selection
-enum {
-    ALT_TAB_UP_DOWN_PGUP_PGDOWN,
-    UP_DOWN_PGUP_PGDOWN,
-    UP_DOWN
-};
-
-// Keyboard sequence type
-enum {
-    UP_OR_DOWN,
-    PGUP_OR_PGDN,
-    ALT_TAB,
-    SEQ_TYPE_MAX
-};
-
-static uint8_t current_macro = MACRO_OFF;
+typedef enum {
+    STATE_IDLE = 0,
+    STATE_PRESS_UP,
+    STATE_PRESS_DOWN,
+    STATE_PRESS_PGUP,
+    STATE_PRESS_PGDN,
+    STATE_PRESS_ALT_TAB,
+    STATE_MAX,
+} my_state_t;
 
 void keyboard_post_init_user(void) {
     srand(timer_read());  // Seed the random generator
 }
 
-void macro_sequence_random(uint8_t selection) {
-
-    uint8_t action = rand() % SEQ_TYPE_MAX;
-    uint8_t rand_loops;
-    uint16_t key;
-    static uint8_t alt_tab_count = 0;
-
-    switch (action) {
-        case ALT_TAB:
-            if (alt_tab_count++ >= 10)
-            {
-                tap_code16(LALT(KC_TAB));
-                alt_tab_count = 0;
-            }
-            break;
-        case PGUP_OR_PGDN:
-            rand_loops = rand()%3;
-            key = rand()%2 ? KC_PGUP : KC_PGDN;
-
-            for(uint8_t i=0; i<rand_loops; i++)
-            {
-                tap_code_delay(key, rand()%20);
-                wait_ms(rand()%300+100);
-            }
-            break;
-        case UP_OR_DOWN:
-            rand_loops = rand()%5;
-            key = rand()%2 ? KC_UP : KC_DOWN;
-
-            for(uint8_t i=0; i<rand_loops; i++)
-            {
-                tap_code_delay(key, rand()%20);
-                wait_ms(rand()%300+100);
-            }
-            break;
-    }
-}
-
-// The macro loop
-void macro_loop(void) {
-    static uint16_t last_run = 0;
-    static uint16_t random_delay = 0;
-
-    if (current_macro == MACRO_OFF || timer_elapsed(last_run) < random_delay)
-        return;
-
-    random_delay = (rand() % 1500)+500;  // Random delay up to 2s
-    last_run = timer_read();
-
-    switch (current_macro) {
-        case MACRO_1: {
-            macro_sequence_random(ALT_TAB_UP_DOWN_PGUP_PGDOWN);
-            break;
-        }
-        case MACRO_2: {
-            macro_sequence_random(ALT_TAB_UP_DOWN_PGUP_PGDOWN);
-            break;
-        }
-        case MACRO_3: {
-            uint8_t rand_loops = rand()%5;
-            uint16_t key = rand()%2 ? KC_UP : KC_DOWN;
-
-            for(uint8_t i=0; i<rand_loops; i++)
-            {
-                tap_code_delay(key, rand()%20);
-                wait_ms(rand()%500+200);
-            }
-            break;
-        }
-    }
-}
+static my_state_t   current_state = STATE_IDLE;
+static uint16_t     last_event_time = 0;
+static uint8_t      current_macro = MACRO_OFF;
 
 // Runs every cycle
 void matrix_scan_user(void) {
-    macro_loop();
+    static uint16_t delay = 0;
+    static uint8_t rand_loops = 0;
+    uint8_t select_state = MACRO_OFF;
+
+    if (current_macro == MACRO_OFF || timer_elapsed(last_event_time) < delay)
+        return;
+
+    switch (current_state) {
+        case STATE_IDLE:
+            switch(current_macro) {
+                case MACRO_1:
+                    select_state = rand()%(STATE_MAX);
+                    break;
+                case MACRO_2:
+                    select_state = rand()%(STATE_MAX-1);
+                    break;
+                case MACRO_3:
+                    select_state = rand()%(STATE_MAX-2);
+                    break;
+            }
+                
+            switch(select_state) {
+                case STATE_PRESS_UP:
+                    current_state = STATE_PRESS_UP;
+                    rand_loops = (rand()%15)+5;
+                    break;
+                case STATE_PRESS_DOWN:
+                    current_state = STATE_PRESS_DOWN;
+                    rand_loops = (rand()%15)+5;
+                    break;
+                case STATE_PRESS_PGUP:
+                    current_state = STATE_PRESS_PGUP;
+                    rand_loops = (rand()%3)+1;
+                    break;
+                case STATE_PRESS_PGDN:
+                    current_state = STATE_PRESS_PGDN;
+                    rand_loops = (rand()%3)+1;
+                    break;
+                case STATE_PRESS_ALT_TAB:
+                    current_state = STATE_PRESS_ALT_TAB;
+                    rand_loops = 0;
+                    break;
+            }
+
+            delay = (rand()%2000)+1000;
+            break;
+
+        case STATE_PRESS_UP:
+            tap_code_delay(KC_UP, rand()%20);
+            delay = rand()%600+200;
+
+            rand_loops--;
+            if (rand_loops == 0) {
+                current_state = STATE_IDLE;
+            }
+            break;
+
+        case STATE_PRESS_DOWN:
+            tap_code_delay(KC_DOWN, rand()%20);
+            delay = rand()%600+200;
+
+            rand_loops--;
+            if (rand_loops == 0) {
+                current_state = STATE_IDLE;
+            }
+            break;
+
+        case STATE_PRESS_PGUP:
+            tap_code_delay(KC_PGUP, rand()%20);
+            delay = rand()%600+200;
+
+            rand_loops--;
+            if (rand_loops == 0) {
+                current_state = STATE_IDLE;
+            }
+            break;
+
+        case STATE_PRESS_PGDN:
+            tap_code_delay(KC_PGDN, rand()%20);
+            delay = rand()%600+200;
+
+            rand_loops--;
+            if (rand_loops == 0) {
+                current_state = STATE_IDLE;
+            }
+            break;
+
+        case STATE_PRESS_ALT_TAB:
+            tap_code16(LALT(KC_TAB));
+            delay = 0;
+            rand_loops = 0;
+            current_state = STATE_IDLE;
+            break;
+        case STATE_MAX:
+        default:
+            break;
+    }
+
+    last_event_time = timer_read();
 }
 
 // Keymap definition
