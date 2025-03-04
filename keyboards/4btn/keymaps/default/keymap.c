@@ -48,14 +48,6 @@ void keyboard_post_init_user(void) {
     srand(timer_read());  // Seed the random generator
 }
 
-// Function to randomly press a key with a delay
-void random_keypress(uint16_t *keys, size_t key_count) {
-    if (key_count == 0) return;
-
-    uint16_t key = keys[rand() % key_count];  // Use QMK's rand()
-    tap_code16(key);
-}
-
 void macro_sequence_random(uint8_t selection) {
 
     uint8_t action = rand() % SEQ_TYPE_MAX;
@@ -107,8 +99,7 @@ void macro_loop(void) {
 
     switch (current_macro) {
         case MACRO_1: {
-            uint16_t keys[] = { KC_PGUP, KC_PGDN, KC_UP, KC_DOWN, LALT(KC_TAB) };
-            random_keypress(keys, sizeof(keys) / sizeof(keys[0]));
+            macro_sequence_random(ALT_TAB_UP_DOWN_PGUP_PGDOWN);
             break;
         }
         case MACRO_2: {
