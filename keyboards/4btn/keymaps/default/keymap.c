@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include QMK_KEYBOARD_H
+#include "pico/bootrom.h"  // ✅ This provides reset_usb_boot()
 
 // Macro States
 enum {
@@ -154,7 +155,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 current_macro = MACRO_2;
                 break;
             case KC_BTN4:
-                current_macro = MACRO_3;
+                // current_macro = MACRO_3;
+                reset_usb_boot(0, 0);  // Forces BOOTSEL mode
                 break;
         }
     }
