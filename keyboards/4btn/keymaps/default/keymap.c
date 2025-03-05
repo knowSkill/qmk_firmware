@@ -19,6 +19,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include QMK_KEYBOARD_H
 #include "pico/bootrom.h"  // ✅ This provides reset_usb_boot()
 
+#define SCALING_FACTOR_DEFAULT 5
+#define SCALING_FACTOR_MAX 10
+#define SCALING_FACTOR_MIN 1
+#define SCALING_FACTOR_MAGNITUDE 1
+#define DURATION_SCALING_FACTOR(value)  (((value * scaling_factor) * SCALING_FACTOR_MAGNITUDE) / SCALING_FACTOR_DEFAULT)
+
 // Macro States
 enum {
     MACRO_OFF,
@@ -44,6 +50,7 @@ void keyboard_post_init_user(void) {
 static my_state_t   current_state = STATE_IDLE;
 static uint16_t     last_event_time = 0;
 static uint8_t      current_macro = MACRO_OFF;
+static uint8_t      scaling_factor = SCALING_FACTOR_DEFAULT;
 
 // Runs every cycle
 void matrix_scan_user(void) {
@@ -51,7 +58,7 @@ void matrix_scan_user(void) {
     static uint8_t rand_loops = 0;
     uint8_t select_state = MACRO_OFF;
 
-    if (current_macro == MACRO_OFF || timer_elapsed(last_event_time) < delay)
+    if (current_macro == MACRO_OFF || timer_elapsed(last_event_time) < DURATION_SCALING_FACTOR(delay))
         return;
 
     switch (current_state) {
@@ -166,7 +173,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 current_macro = MACRO_1;
                 break;
             case KC_BTN3:
-                current_macro = MACRO_2;
+                scaling_factor++;
+                if (scaling_factor > SCALING_FACTOR_MAX) {
+                    scaling_factor = SCALING_FACTOR_MAX;
+                }
                 break;
             case KC_BTN4:
                 // current_macro = MACRO_3;
